@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Model\Product;
 use Illuminate\Http\Request;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductCollection;
 
 class ProductController extends Controller
 {
+
+
+    public function __construct()
+    {
+        $this->middleware('auth:api')->except('index','show');
+    }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -15,6 +25,13 @@ class ProductController extends Controller
     public function index()
     {
         //
+
+         //return ProductResource::collection(Product::paginate(20));
+         
+         return ProductCollection::collection(Product::paginate(20));
+        
+
+
     }
 
     /**
@@ -47,6 +64,9 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         //
+
+        return new ProductResource($product);
+
     }
 
     /**
