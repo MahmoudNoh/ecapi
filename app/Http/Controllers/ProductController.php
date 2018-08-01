@@ -9,6 +9,9 @@ use App\Http\Resources\ProductCollection;
 use App\Http\Requests\ProductRequest;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use App\Exceptions\ProductNotBelongsToUser;
+
+
 
 class ProductController extends Controller
 {
@@ -71,11 +74,7 @@ class ProductController extends Controller
 
         return response()->json(['status'=>"There is a problem ", 'data'=>$product], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-        /*return response([
-                    'data' => new ProductResource($product)
-                ],
-                Response::HTTP_CREATED);*/
-        
+      
      
        
     }
@@ -115,12 +114,15 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         //
-       /* $this->ProductUserCheck($product);
+        $this->ProductUserCheck($product);
         $request['detail'] = $request->description;
-        unset($request['description']);*/
-        $product->update($request->all());
+        unset($request['description']);
 
-        /*return response()->json(['status'=>"There is a problem ", 'data'=>$product], Response::HTTP_INTERNAL_SERVER_ERROR);*/
+        if($product->update($request->all())){
+            return response()->json(['status'=>"Successfuly Updated Product ", 'data'=>$product], Response::HTTP_CREATED);
+        }
+
+        return response()->json(['status'=>"There is a problem ", 'data'=>$product], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 
         /*return response([
@@ -137,8 +139,13 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $this->ProductUserCheck($product);
-        $product->delete();
-        return response(null,Response::HTTP_NO_CONTENT);
+       
+        if( $product->delete()){
+            return response()->json(['status'=>"Successfuly Deleted Product "], Response::HTTP_OK);
+        }
+
+        return response()->json(['status'=>"There is a problem ", 'data'=>$product], Response::HTTP_INTERNAL_SERVER_ERROR);
+
     }
 
 
