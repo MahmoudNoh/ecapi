@@ -63,23 +63,20 @@ class ProductController extends Controller
         $product->discount = $request->discount;
         $product->user_id = $request->user()->id;
 
-         $product->save();
-        return response([
+
+
+         if($product->save()){
+            return response()->json(['status'=>"Successfuly Created Product ", 'data'=>$product], Response::HTTP_CREATED);
+         }
+
+        return response()->json(['status'=>"There is a problem ", 'data'=>$product], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        /*return response([
                     'data' => new ProductResource($product)
                 ],
-                Response::HTTP_CREATED);
-        return response()->json(['status'=>"Successfuly Created Product ", 'data'=>$product], Response::HTTP_CREATED);
-       /* if( $product->save()){
-             return response(
-                [
-                    'status'=> 'success',
-                    'data' => new ProductResource($product)
-                ],
-                Response::HTTP_CREATED);
-        }else{
-
-        }*/
-
+                Response::HTTP_CREATED);*/
+        
+     
        
     }
 
@@ -118,6 +115,17 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         //
+       /* $this->ProductUserCheck($product);
+        $request['detail'] = $request->description;
+        unset($request['description']);*/
+        $product->update($request->all());
+
+        /*return response()->json(['status'=>"There is a problem ", 'data'=>$product], Response::HTTP_INTERNAL_SERVER_ERROR);*/
+
+
+        /*return response([
+            'data' => new ProductResource($product)
+        ],Response::HTTP_CREATED);*/
     }
 
     /**
@@ -128,6 +136,18 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $this->ProductUserCheck($product);
+        $product->delete();
+        return response(null,Response::HTTP_NO_CONTENT);
     }
+
+
+
+    public function ProductUserCheck($product)
+    {
+        if (Auth::id() !== $product->user_id) {
+            throw new ProductNotBelongsToUser;
+        }
+    }
+
 }
